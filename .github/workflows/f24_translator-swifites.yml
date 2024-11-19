@@ -37,6 +37,9 @@ jobs:
 
       # Run tests using pytest (or ipytest for Jupyter environments)
       - name: Run tests
+        env:
+          AZURE_OPENAI_KEY: ${{ secrets.AZURE_OPENAI_KEY }}
+          AZURE_OPENAI_BASE: ${{ secrets.AZURE_OPENAI_BASE }}
         run: |
           pytest -vv  # Or use ipytest.run('-vv') for IPython/Jupyter environment
 
