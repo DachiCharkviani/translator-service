@@ -3,10 +3,8 @@ import time
 import os
 
 # Set up OpenAI API credentials and endpoint
-# openai.api_key = os.getenv("AZURE_OPENAI_KEY")
-# openai.api_base = os.getenv("AZURE_OPENAI_BASE")
-openai.api_key = "6E99W8idFb9tlLW5MdUP81r090GP6bcTo2ll5eDcDcjZOxCXnIYDJQQJ99AJACYeBjFXJ3w3AAABACOGCaqt"
-openai.api_base = "https://davit-openai-resource.openai.azure.com/"
+openai.api_key = os.getenv("AZURE_OPENAI_KEY")
+openai.api_base = os.getenv("AZURE_OPENAI_BASE")
 openai.api_type = "azure"
 openai.api_version = "2024-08-01-preview"
 
