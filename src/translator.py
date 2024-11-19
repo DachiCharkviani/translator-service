@@ -79,27 +79,43 @@ def get_language_with_retry(post: str, max_retries: int = 10, initial_delay: int
             return (None, f"Unexpected error during language detection: {e}", e)
 
 def query_llm(post: str) -> tuple[bool, str]:
-    """Determines if the post is in English and translates non-English posts to English."""
+    """Determines if the post is in English and translates non-English posts to English with robust error handling."""
+    try:
+        # Attempt to detect the language
+        detected_language = get_language_with_retry(post)
 
-    detected_language = get_language_with_retry(post)
+        # Check if detected_language is a valid string
+        if not isinstance(detected_language, str):
+            return False, "Language detection error: unexpected response format."
 
-    if detected_language is None:
-        # Could not determine the language
-        return False, "Language detection error."
+        # Handle English posts directly
+        if detected_language.lower() == "english":
+            return True, post
 
-    if detected_language.lower() == "english":
-        # No translation needed for English posts
-        return True, post
+        # Handle unintelligible or unknown languages gracefully
+        if detected_language.lower() in ["unintelligible", "unknown"]:
+            return False, "Unintelligible text."
 
-    # Handle unintelligible or unknown languages
-    if detected_language.lower() in ["unintelligible", "unknown"]:
-        return False, "Unintelligible text."
+        # Attempt translation for non-English posts
+        translation = get_translation(post)
 
-    # Translate non-English posts to English
-    translation = get_translation(post)
+        # Check if translation response is valid
+        if not isinstance(translation, str):
+            return False, "Translation error: unexpected response format."
 
-    if translation is None:
-        # Translation failed
-        return False, "Translation unavailable."
+        return False, translation
 
-    return False, translation
+    except AttributeError as e:
+        # Handle specific cases where the response format is missing or malformed
+        print(f"Unexpected error during language detection: {e}")
+        return False, "Unexpected error: response format issue."
+
+    except IndexError as e:
+        # Handle cases where list indexing fails (e.g., missing choices or message content)
+        print(f"Unexpected error during language detection: {e}")
+        return False, "Unexpected error: response format issue."
+
+    except Exception as e:
+        # Capture any other unexpected error and handle gracefully
+        print(f"Unexpected error: {e}")
+        return False, "Unexpected error occurred in language detection or translation."
