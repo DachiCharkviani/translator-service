@@ -1,9 +1,10 @@
 import openai
 import time
+import os
 
 # Set up OpenAI API credentials and endpoint
-openai.api_key = "6E99W8idFb9tlLW5MdUP81r090GP6bcTo2ll5eDcDcjZOxCXnIYDJQQJ99AJACYeBjFXJ3w3AAABACOGCaqt"
-openai.api_base = "https://davit-openai-resource.openai.azure.com/"
+openai.api_key = os.getenv("AZURE_OPENAI_KEY")
+openai.api_base = os.getenv("AZURE_OPENAI_BASE")
 openai.api_type = "azure"
 openai.api_version = "2024-08-01-preview"
 
@@ -77,4 +78,28 @@ def get_language_with_retry(post: str, max_retries: int = 10, initial_delay: int
         except Exception as e:
             return (None, f"Unexpected error during language detection: {e}", e)
 
+def query_llm(post: str) -> tuple[bool, str]:
+    """Determines if the post is in English and translates non-English posts to English."""
 
+    detected_language = get_language_with_retry(post)
+
+    if detected_language is None:
+        # Could not determine the language
+        return False, "Language detection error."
+
+    if detected_language.lower() == "english":
+        # No translation needed for English posts
+        return True, post
+
+    # Handle unintelligible or unknown languages
+    if detected_language.lower() in ["unintelligible", "unknown"]:
+        return False, "Unintelligible text."
+
+    # Translate non-English posts to English
+    translation = get_translation(post)
+
+    if translation is None:
+        # Translation failed
+        return False, "Translation unavailable."
+
+    return False, translation
