@@ -30,6 +30,16 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # Install test dependencies (including pytest and pytest-mock)
+      - name: Install test dependencies
+        run: |
+          pip install pytest pytest-mock ipytest
+
+      # Run tests using pytest (or ipytest for Jupyter environments)
+      - name: Run tests
+        run: |
+          pytest -vv  # Or use ipytest.run('-vv') for IPython/Jupyter environment
+
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
       - name: Zip artifact for deployment
         run: zip release.zip ./* -r
